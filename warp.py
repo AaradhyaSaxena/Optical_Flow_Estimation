@@ -31,8 +31,8 @@ def warp_image(im, flow):
     mask = np.logical_or(fx <0 , fx > flow_width)
     mask = np.logical_or(mask, fy < 0)
     mask = np.logical_or(mask, fy > flow_height)
-    fx = np.minimum(np.maximum(fx, 0), flow_width)        ### why this
-    fy = np.minimum(np.maximum(fy, 0), flow_height)       ### why this
+    fx = np.minimum(np.maximum(fx, 0), flow_width)
+    fy = np.minimum(np.maximum(fy, 0), flow_height)
     points = np.concatenate((ix.reshape(n,1), iy.reshape(n,1)), axis=1)
     xi = np.concatenate((fx.reshape(n, 1), fy.reshape(n,1)), axis=1)
     warp = np.zeros((image_height, image_width, im.shape[2]))
