@@ -55,8 +55,18 @@ data = np.load('data/unet.npz')
 X1 = data['X1']/255.0
 X2 = data['X2']/255.0
 
-model.fit([X1,X2],None,batch_size=batch_size,epochs=10000)
+model.fit([X1,X2],None,batch_size=batch_size,epochs=10)
 
 
-Y_out=model.predict([X1,X2])[0]
-Y_out=np.sqrt(Y_out[:,:,0]*Y_out[:,:,0]+Y_out[:,:,1]*Y_out[:,:,1])
+Y_out=model.predict([X1,X2])
+
+np.savez('data/unet_out', y = Y_out)
+l = np.load('data/unet_out.npz')
+print(l.files)
+
+
+# Y_out=np.sqrt(Y_out[:,:,0]*Y_out[:,:,0]+Y_out[:,:,1]*Y_out[:,:,1])
+
+# Y_out=model.predict([X1,X2])[0]
+# Y_out=np.sqrt(Y_out[:,:,0]*Y_out[:,:,0]+Y_out[:,:,1]*Y_out[:,:,1])
+
