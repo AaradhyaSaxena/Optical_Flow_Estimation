@@ -10,6 +10,7 @@ from scipy import misc
 from skimage.transform import  resize
 from init import *
 
+
 def rgbf2bgr(rgbf):
 	t = rgbf*255.0
 	t = np.clip(t, 0.,255.0)
@@ -22,9 +23,11 @@ def rgbf2rgb(rgbf):
 	rgb = t.astype(np.uint8)
 	return rgb
 
-class ImageSequence(Sequence):
 
-    def __init__(self,  batch_size=4, input_size=(240,360), f_gap=1):
+
+
+class ImageSequence(Sequence):
+    def __init__(self,  batch_size=4, input_size=(240, 360),f_gap=1):
         self.image_seq_path="/home/ranjan/work/flow/data/Test/eval-data-gray/"
         #self.image_seq_path='../data/UCSD/UCSDped1/Train/'
         self.max_sence= 36
@@ -38,6 +41,7 @@ class ImageSequence(Sequence):
         self.SHAPE_Y=self.input_shape[0]
         self.SHAPE_X=self.input_shape[1]
 
+
     def __len__(self):
         return (180)
 
@@ -47,10 +51,9 @@ class ImageSequence(Sequence):
         return Img
 
     def __getitem__(self, idx):
-
         x_batch = []
         c=0
-        d_idx=np.random.randint(0,self.len_dirs)  #sence IDX
+        d_idx =np.random.randint(0,self.len_dirs)  #sence IDX
         path=self.image_seq_path+self.dirs[d_idx]+"/"
         self.frames=os.listdir(path)
         self.frames.sort()
@@ -65,17 +68,18 @@ class ImageSequence(Sequence):
             c=c+1
             I1=self.read_image(path+I1_file)
             I2=self.read_image(path+I2_file)
-            # I1=resize(I1,(self.SHAPE_Y,self.SHAPE_X,1))
-            # I2=resize(I2,(self.SHAPE_Y,self.SHAPE_X,1))
-            I1=np.expand_dims(I1,axis=-1) 
-            I2=np.expand_dims(I2,axis=-1) 
+            #I1=resize(I1,(self.SHAPE_Y,self.SHAPE_X,1))                
+            #I2=resize(I2,(self.SHAPE_Y,self.SHAPE_X,1))               
+	    I1=np.expand_dims(I1,axis=-1) 
+	    I2=np.expand_dims(I2,axis=-1) 
             x_batch.append([I1,I2])
 
+
         x_batch = np.array(x_batch, np.float32)
-        # x_batch=np.zeros((4,2,240, 360, 1))
-        # return ([x_batch[:,0,:,:,:],x_batch[:,1,:,:,:]],y_batch)
-        x_batch1=x_batch[:,0,:SHAPE_Y,:SHAPE_X,:]
-        x_batch2=x_batch[:,1,:SHAPE_Y,:SHAPE_X,:]
+        #x_batch=np.zeros((4,2,240, 360, 1))
+        #return ([x_batch[:,0,:,:,:],x_batch[:,1,:,:,:]],y_batch)
+	x_batch1=x_batch[:,0,:SHAPE_Y,:SHAPE_X,:]
+	x_batch2=x_batch[:,1,:SHAPE_Y,:SHAPE_X,:]
 
         #return ([x_batch[:,0,:,:,:],x_batch[:,1,:,:,:]],None)
         return ([x_batch1,x_batch2],None)

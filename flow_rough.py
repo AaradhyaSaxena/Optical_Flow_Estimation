@@ -68,19 +68,24 @@ from utils import *
 
 ##-------------------depth_plot---------------------
 
-# data = np.load('data/flow_to_depth.npz')
-# print(data.files)
+data = np.load('data/flow_to_depth.npz')
+print(data.files)
 
-# depth = data['depth']
-# # depth = (depth +1)/2
+depth = data['depth']
+depth = (depth +1)/2
 
-# for i in range(len(depth)):
-# 	im0 = depth[i]
-# 	cv2.imwrite('depth_{}.jpg', im0).format(i)
-# 	# cv2.imshow("image", im0);
-# 	# cv2.waitKey();
+im0 = depth[0]
+
+cv2.imwrite('depth1.jpg', im0)
+cv2.imshow("image", im0);
+cv2.waitKey();
 
 
+
+# cv2.imwrite(img_name, crop_img)
+# # %matplotlib inline 
+# plt.imshow(im0, interpolation='nearest')
+# plt.show()
 
 
 

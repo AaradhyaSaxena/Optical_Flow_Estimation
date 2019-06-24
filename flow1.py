@@ -1,5 +1,5 @@
-# import os
-# os.environ['CUDA_VISIBLE_DEVICES'] = '1'
+import os
+os.environ['CUDA_VISIBLE_DEVICES'] = '1'
 import numpy as np
 from matplotlib import pyplot as plt
 import cv2
@@ -12,37 +12,23 @@ from numpy.linalg import inv
 from optical_flow_toolkit import *
 from utils_flow import *
 
-###---------------------something--------------------------
-
-
-# imgL = cv2.imread("00_flow_data/image/frame_0001.png",0)
-# imgR = cv2.imread("00_flow_data/image/frame_0002.png",0)
-# stereo = cv2.StereoBM_create(numDisparities=16, blockSize=15)
-# disparity = stereo.compute(imgL,imgR)
-# plt.imshow(disparity,'gray')
-# plt.show()
-
-
-
 ###----------------------data------------------------------
 
-flow=read_flo_file("00_flow_data/flo/frame_0001.flo")
+f=read_flo_file("data/flo/frame_0001.flo")
+f = f[np.newaxis,:,:,:]
 
-im1 = cv2.imread("00_flow_data/image/frame_0001.png",0)
-im2 = cv2.imread("00_flow_data/image/frame_0002.png",0)
-flow = flow[np.newaxis,:,:,:]
-im1 = im1[np.newaxis,:,:]
-im2 = im2[np.newaxis,:,:]
+# im1 = cv2.imread("00_flow_data/image/frame_0001.png",0)
+# im2 = cv2.imread("00_flow_data/image/frame_0002.png",0)
+# im1 = im1[np.newaxis,:,:]
+# im2 = im2[np.newaxis,:,:]
 
-# depth,essentialMatrix,tvecs,rvecs,corr1,corr2 = return_corr_from_flow(im1, im2, flow)
+depth,essentialMatrix,tvecs,rvecs,corr1,corr2 = return_corr_from_flow(f)
 
-# # np.savez('depth_12', depth=depth)
-# np.savez('depth_12_scaled', depth=depth)
+print(essentialMatrix)
 
-###----------------------visualizing------------------------------
+# np.savez('depth_12', depth=depth)
 
-# sdata = np.load('depth_12_scaled.npz')
-# sdepth = sdata['depth']
+###----------------------preprocessing------------------------------
 
 # data = np.load('depth_12.npz')
 # depth = data['depth']
@@ -51,18 +37,22 @@ im2 = im2[np.newaxis,:,:]
 # # scale = depth[0,:,436,0]
 
 # # dividing by the co-effe of translation term to scale all the other co-effe
-# # depth_scale = depth[0,:,:,0]/depth[0,:,436,0,None]
+# depth_scale = depth[0,:,:,0]/depth[0,:,436,0,None]
 
-# # plt.imshow(depth[0,:,:,0].T, cmap=plt.get_cmap('flag'))
-# # plt.imsave('dep12',depth[0,:,:,0].T, cmap=plt.get_cmap('flag'))
+# # plt.imshow(depth[0,:,:,0], cmap=plt.get_cmap('flag'))
 
 # plt.imshow(depth_scale[:,:].T, cmap=plt.get_cmap('flag'))
-# # plt.imsave('dep12s',depth_scale[:,:].T, cmap=plt.get_cmap('flag'))
 
 # plt.show()
 
 
-###---------------------data_ecsuiplab-----------------------------
+
+
+
+
+
+
+###----------------------------------------------------
 
 # f=read_flo_file("/media/newhd/data/flow/MPI_SINTEL/MPI-Sintel-complete/training/flow/alley_1/frame_0001.flo")
 
@@ -76,7 +66,7 @@ im2 = im2[np.newaxis,:,:]
 
 
 
-##-----------------------crop------------------------
+##--------------crop------------------------
 # cropped_flow =[]
 # flo_counter=0
 # for flo in flo_paths:
