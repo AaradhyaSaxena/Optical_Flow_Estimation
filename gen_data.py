@@ -34,12 +34,12 @@ def readFlow(name):
     flow[flow>10000]=0
     return flow
 
-
 def get_images(dirx):
     l=os.listdir(dirx)
     frame1=imread(dirx+"/"+'frame10.png')
     frame2=imread(dirx+"/"+'frame11.png')
     return [frame1,frame2]
+
 def get_flow(diry):
     l=os.listdir(diry)
     flow=readFlow(diry+"/"+l[0])
@@ -47,8 +47,8 @@ def get_flow(diry):
 
 
 def get_data():
-	DATA_DIR_X ="/home/ranjan/work/flow/data/middlebury_color/other-data/"
-	DATA_DIR_GT ="/home/ranjan/work/flow/data/middlebury_color/other-gt-flow/"
+	DATA_DIR_X ="/media/newhd/data/flow/MPI_SINTEL/MPI-Sintel-complete/training/albedo"
+	DATA_DIR_GT ="/media/newhd/data/flow/MPI_SINTEL/MPI-Sintel-complete/training/flow"
 	d=os.listdir(DATA_DIR_GT)
 	X=[]
 	Y=[]
