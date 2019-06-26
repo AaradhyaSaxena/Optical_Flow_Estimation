@@ -7,28 +7,11 @@ import glob
 import pandas as pd
 import os
 from scipy import misc
-from skimage.transform import  resize
-from init import *
-
-
-def rgbf2bgr(rgbf):
-	t = rgbf*255.0
-	t = np.clip(t, 0.,255.0)
-	bgr = t.astype(np.uint8)[..., ::-1]
-	return bgr
-
-def rgbf2rgb(rgbf):
-	t = rgbf*255.0
-	t = np.clip(t, 0.,255.0)
-	rgb = t.astype(np.uint8)
-	return rgb
-
+from skimage.transform import resize
 
 class ImageSequence(Sequence):
     def __init__(self,  batch_size=4, input_size=(436, 1024),f_gap=1):
-        self.image_seq_path="/media/newhd/data/flow/MPI_SINTEL/MPI-Sintel-complete/training/albedo"
-        #self.image_seq_path='../data/UCSD/UCSDped1/Train/'
-        self.max_sence= 50                      # whats this for?
+        self.image_seq_path="/media/newhd/data/flow/MPI_SINTEL/MPI-Sintel-complete/training/albedo/"
         self.input_shape=input_size
         self.dirs=os.listdir(self.image_seq_path)
         self.dirs.sort()
@@ -45,10 +28,11 @@ class ImageSequence(Sequence):
 
     def read_image(self,file_path):
         Img=misc.imread(file_path)
-        Img=resize(Img,(SHAPE_Y,SHAPE_X))
+        Img=resize(Img,(self.SHAPE_Y,self.SHAPE_X))
         return Img
 
-    def __getitem__(self, idx):
+    def __getitem__(self, idx = np.random.randint(0,self.len_dirs)):
+
         x_batch = []
         c = 0
         d_idx = np.random.randint(0,self.len_dirs) 
@@ -59,7 +43,7 @@ class ImageSequence(Sequence):
 
         while(c<self.batch_size):
                               
-            s_idx = np.random.randint(0,num_frames-self.f_gap)  #sence IDX  ????????????
+            s_idx = np.random.randint(0,num_frames-self.f_gap)  
                              
             I1_file = self.frames[s_idx]  
             I2_file = self.frames[s_idx+self.f_gap]
@@ -72,11 +56,11 @@ class ImageSequence(Sequence):
             I2=np.expand_dims(I2,axis=-1) 
             x_batch.append([I1,I2])
 
-        x_batch = np.array(x_batch, np.float32)
+        x_batch = np.array(x_batch, np.float32) 
         #x_batch=np.zeros((4,2,240, 360, 1))
         #return ([x_batch[:,0,:,:,:],x_batch[:,1,:,:,:]],y_batch)
-        x_batch1=x_batch[:,0,:SHAPE_Y,:SHAPE_X,:]
-        x_batch2=x_batch[:,1,:SHAPE_Y,:SHAPE_X,:]
+        x_batch1=x_batch[:,0,:self.SHAPE_Y,:self.SHAPE_X,:]
+        x_batch2=x_batch[:,1,:self.SHAPE_Y,:self.SHAPE_X,:]
 
         #return ([x_batch[:,0,:,:,:],x_batch[:,1,:,:,:]],None)
         return ([x_batch1,x_batch2],None)
@@ -87,7 +71,7 @@ class ImageSequence(Sequence):
 
 
 
-from generator import *
+# from generator import *
 A=ImageSequence()
-A.__getitem__(3)
+x1, _ = A.__getitem__()
 
