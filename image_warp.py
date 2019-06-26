@@ -1,7 +1,7 @@
 import tensorflow as tf
 import  keras.backend as  K
 
-def image_warp(im, flow, num_batch=50):
+def image_warp(im, flow,num_batch=4):
     """Performs a backward warp of an image using the predicted flow.
 
     Args:
@@ -12,10 +12,12 @@ def image_warp(im, flow, num_batch=50):
     """
     with tf.variable_scope('image_warp'):
        
-        _ , height, width, channels = K.int_shape(im)
+        
+        _, height, width, channels = K.int_shape(im)
         #num_batch, height, width, channels = tf.unstack(tf.shape(im))
         #num_batch, height, width, channels = 1,240,360,1
-        #num_batch = 40
+        #num_batch=40
+
         max_x = tf.cast(width - 1, 'int32')
         max_y = tf.cast(height - 1, 'int32')
         zero = tf.zeros([], dtype='int32')
@@ -26,16 +28,16 @@ def image_warp(im, flow, num_batch=50):
 
         # Floor the flow, as the final indices are integers
         # The fractional part is used to control the bilinear interpolation.
-        flow_floor = tf.to_int32(tf.floor(flow_flat))
+        flow_floor = tf.cast(tf.floor(flow_flat),'int32')
         bilinear_weights = flow_flat - tf.floor(flow_flat)
 
         # Construct base indices which are displaced with the flow
         pos_x = tf.tile(tf.range(width), [height * num_batch])
-        grid_y = tf.tile(tf.expand_dims(tf.range(height), 1), [1, width])  ####??????
-        pos_y = tf.tile(tf.reshape(grid_y, [-1]), [num_batch])             ####??????
+        grid_y = tf.tile(tf.expand_dims(tf.range(height), 1), [1, width])
+        pos_y = tf.tile(tf.reshape(grid_y, [-1]), [num_batch])
 
-        print  K.int_shape(im_flat),K.int_shape(pos_x)                   
-        x = flow_floor[:, 0]                                            
+        print  K.int_shape(im_flat),K.int_shape(pos_x)
+        x = flow_floor[:, 0]
         y = flow_floor[:, 1]
         xw = bilinear_weights[:, 0]
         yw = bilinear_weights[:, 1]
