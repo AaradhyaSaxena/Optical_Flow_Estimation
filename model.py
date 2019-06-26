@@ -30,7 +30,7 @@ from scipy import misc
 import keras_contrib.backend as KC
 from keras.utils import multi_gpu_model
 import tensorflow as tf
-from init import *
+# from init import *
 
 batch_size=4
 
