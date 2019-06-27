@@ -16,7 +16,7 @@ from PIL import Image
 
 
 class ImageSequence(Sequence):
-    def __init__(self,  batch_size=4, input_size=(436, 1024),f_gap=1):
+    def __init__(self,  batch_size=4, input_size=(436, 1024,3),f_gap=1):
         self.image_seq_path="/media/newhd/data/flow/MPI_SINTEL/MPI-Sintel-complete/training/albedo/"
         self.input_shape=input_size
         self.dirs=os.listdir(self.image_seq_path)
@@ -81,7 +81,7 @@ class ImageSequence(Sequence):
 #---------------------------------------------------------------------
 
 class ImageSequence_new(Sequence):
-    def __init__(self,  batch_size=4, input_size=(436, 1024),f_gap=1):
+    def __init__(self,  batch_size=10, input_size=(436, 1024),f_gap=1):
         self.image_seq_path="/media/newhd/data/flow/MPI_SINTEL/MPI-Sintel-complete/training/albedo/"
         self.flow_seq_path="/media/newhd/data/flow/MPI_SINTEL/MPI-Sintel-complete/training/flow/"
 
@@ -101,14 +101,16 @@ class ImageSequence_new(Sequence):
         self.f_gap=f_gap
         self.SHAPE_Y=self.input_shape[0]
         self.SHAPE_X=self.input_shape[1]
+        # self.im_SHAPE_C=3
+        # self.fl_SHAPE_C=2
 
 
-    def __len__(self):                     
+    def __len__(self):
         return (180)
 
     def read_image(self,file_path):
         Img=misc.imread(file_path)
-        Img=resize(Img,(self.SHAPE_Y,self.SHAPE_X))
+        Img=resize(Img,(self.SHAPE_Y,self.SHAPE_X,))#self.im_SHAPE_C))
         return Img
 
 ########-----------------------------------------
@@ -129,7 +131,7 @@ class ImageSequence_new(Sequence):
         else:
             w = np.fromfile(f, np.int32, count=1)
             h = np.fromfile(f, np.int32, count=1)
-            print("Reading %d x %d flow file in .flo format" % (h, w))
+            # print("Reading %d x %d flow file in .flo format" % (h, w))
             data2d = np.fromfile(f, np.float32, count=2 * w * h)
             # reshape data into 3D array (columns, rows, channels)
             data2d = np.resize(data2d, (h[0], w[0], 2))
