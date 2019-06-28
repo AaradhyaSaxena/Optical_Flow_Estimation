@@ -86,15 +86,16 @@ imgen=ImageSequence_new()
 
 #-------------------------Training-----------
 
+model.load_weights('data/grad_ssim_full.h5')
 
-model.fit_generator(imgen,epochs=10000)
+model.fit_generator(imgen,epochs=200)
 
 # model.fit([X1,X2],Y,batch_size=4,epochs=10000)
-# model.load_weights('data/model_1')
+# model.load_weights('data/grad_ssim_full')
 
 y=model.predict([X1,X2])
 
-model.save_weights("data/grad_ssim_full.h5")
+model.save_weights("data/grad_ssim_full1.h5")
 
 # np.savez('sample_model1', flow =y1)
 
