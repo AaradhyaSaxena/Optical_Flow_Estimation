@@ -316,7 +316,11 @@ class ImageSequence_new(Sequence):
 
 
         # y_flow=np.random.random((x_batch1.shape[:-1]+(2,)))
+
+
         return ([x_batch[:,0,:,:,:],x_batch[:,1,:,:,:]],flow_batch)
+        # return ([x_batch[:,0,:,:,:], x_batch[:,1,:,:,:]],None)
+
         #return (x_batch1,x_batch2,None)
         #return x_batch
 
@@ -331,5 +335,6 @@ class ImageSequence_new(Sequence):
 # from generator import *
 # A=ImageSequence_new()
 
-# [x1,x2],fl = A.__getitem__()
+# # [x1,x2],fl = A.__getitem__()
+# [x1,x2],_ = A.__getitem__()
 

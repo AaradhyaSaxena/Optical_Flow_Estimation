@@ -31,11 +31,12 @@ import keras_contrib.backend as KC
 from keras.utils import multi_gpu_model
 import tensorflow as tf
 # from init import *
+from model_utils import *
 
 batch_size=4
 
-SHAPE_Y=416
-SHAPE_X=416
+SHAPE_Y=436
+SHAPE_X=1024
 
 def cconv(image, g_kernel):
     g_kernel=g_kernel[:,:,np.newaxis,np.newaxis]
@@ -87,7 +88,7 @@ def div_into_patch_back(x):
     x2=tf.depth_to_space(patches,p_x)
     return x2
 
-def create_model(input_shape=(SHAPE_Y,SHAPE_X,1)):
+def create_model(input_shape=(SHAPE_Y,SHAPE_X,3)):
     n_layers_down = [2,2,2]
     n_layers_up = [2,2,2]
     n_filters_down = [5,8,10]
@@ -141,10 +142,13 @@ def create_model(input_shape=(SHAPE_Y,SHAPE_X,1)):
     F = Conv2D(2, (1, 1), activation=None)(x3)
 
     model = Model(inputs=[input1,input2], outputs=[F])
+
+    # model.compile(loss=c_recMse_grad,optimizer="Adam")
+
     return model
 
 #compile with new loss
-def compile_model_new(model,b_size,lambda1=0.02):
+def compile_model_new(model,b_size,lambda1=0.002):
     """
     session=tf.Session()
     session.run(tf.global_variables_initializer())
@@ -168,9 +172,11 @@ def compile_model_new(model,b_size,lambda1=0.02):
     sm_loss=lambda1*(K.mean(K.abs(ux*ux)+ K.abs(uy*uy)+ K.abs(vx*vx)+ K.abs(vy*vy)))
 
     re_loss=DSSIMObjective(kernel_size=50)(model.inputs[1],input1_rec)
+
+    loss_mse = K.mean(K.square(model.outputs[0] - model.inputs[1]))
     
     #total_loss=(1/s1_2)*re_loss+(1/s2_2)*sm_loss+K.log(s1_2)+K.log(s2_2)
-    total_loss=lambda1*sm_loss+re_loss
+    total_loss=lambda1*sm_loss+re_loss + loss_mse
 
     model.add_loss(total_loss)
 
@@ -189,3 +195,9 @@ def recons_img(input_image,F):
     out=f1([input_image,F])
     return out
 
+
+# model_base=create_model()
+
+# model=compile_model_new(model_base,batch_size,lambda1=0.1)
+
+model = create_model()

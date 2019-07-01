@@ -32,6 +32,7 @@ import tensorflow as tf
 from generator import *
 from model import *
 
+
 ####---------------LOSS--------------------
 ####-------------Two-Arguments-------------
 
@@ -101,21 +102,23 @@ def c_grad1(y_true,y_pred):
 
     return total_loss 
 
+
 def c_grad_rec(y_true,y_pred,model):
 
-    lambda1 = 0.5
+    lambda1 = 0.005
 
     input1_rec=image_warp(model.inputs[0],model.outputs[0])
     # input0_rec=image_warp(model.inputs[1],-model.outputs[0],num_batch = 2)
 
     ux,uy=grad_xy(model.outputs[0][:,:,:,:1])
     vx,vy=grad_xy(model.outputs[0][:,:,:,1:2])
-
     sm_loss=lambda1*(K.mean(K.abs(ux*ux)+ K.abs(uy*uy)+ K.abs(vx*vx)+ K.abs(vy*vy)))
 
     re_loss_mse = K.mean(K.square(model.inputs[1] - input1_rec))
 
-    total_loss = lambda1*sm_loss+re_loss_mse
+    loss_mse = K.mean(K.square(y_pred - y_true))
+
+    total_loss = lambda1*sm_loss+re_loss_mse + loss_mse
 
     return total_loss
 

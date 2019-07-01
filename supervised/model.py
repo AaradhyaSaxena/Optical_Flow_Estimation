@@ -83,7 +83,6 @@ def div_into_patch_back(x):
     stride_size=[1,p_y,p_x,1]
     patches = tf.extract_image_patches(x,patch_size, stride_size, [1, 1, 1, 1], 'VALID')
 
-
     x2=tf.depth_to_space(patches,p_x)
     return x2
 
@@ -184,8 +183,10 @@ def recons_img(input_image,F):
     inp1 = K.placeholder(shape=input_image.shape)
     F_in = K.placeholder(shape=F.shape)
     input1_rec=image_warp(inp1,F,num_batch=F.shape[0])
-    f1=K.function(inputs=[inp1,F_in],outputs=[input1_rec])
+    f1=K.function(inputs=[inp1,F_in], outputs=[input1_rec])
    
     out=f1([input_image,F])
     return out
 
+
+model = create_model()

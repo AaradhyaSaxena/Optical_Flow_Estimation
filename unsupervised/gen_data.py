@@ -45,8 +45,8 @@ def get_flow(diry):
 
 
 def get_data():
-	DATA_DIR_X ="/home/ranjan/work/flow/data/middlebury_color/other-data/"
-	DATA_DIR_GT ="/home/ranjan/work/flow/data/middlebury_color/other-gt-flow/"
+	DATA_DIR_X ="/media/newhd/data/flow/MPI_SINTEL/MPI-Sintel-complete/training/albedo/"
+	DATA_DIR_GT ="/media/newhd/data/flow/MPI_SINTEL/MPI-Sintel-complete/training/flow/"
 	d=os.listdir(DATA_DIR_GT)
 	X=[]
 	Y=[]
