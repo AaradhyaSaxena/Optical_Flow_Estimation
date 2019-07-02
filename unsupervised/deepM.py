@@ -1,7 +1,7 @@
 from keras import Input, Model
-from keras.layers import Conv2D, BatchNormalization, MaxPooling2D, UpSampling2D
-from keras.layers import Add, Dropout, concatenate,Flatten,Dense, MaxoutDense
-from keras.layers import Lambda,Reshape,LocallyConnected2D,SeparableConv1D,LocallyConnected1D,LeakyReLU
+from keras.layers import Conv2D, BatchNormalization, MaxPooling2D, UpSampling2D, Lambda
+from keras.layers import Add, Dropout, concatenate,Flatten,Dense, MaxoutDense, MaxPooling3D
+from keras.layers import Reshape,LocallyConnected2D,SeparableConv1D,LocallyConnected1D,LeakyReLU
 import os
 os.environ['CUDA_VISIBLE_DEVICES'] ='1'
 from keras.utils import plot_model
@@ -56,9 +56,9 @@ def return_deepU(shape=(436,1024,3)):
     z2 = BatchNormalization()(z2)
     z3 = Conv2D(32,(3,3), padding='same',activation=act)(z2)
     z3 = BatchNormalization()(z3)
-    z3 = Conv2D(32,(3,3), padding='same',activation=act)(z2)
+    z3 = Conv2D(32,(3,3), padding='same',activation=act)(z3)
     z3 = BatchNormalization()(z3)
-    z3 = Conv2D(32,(3,3), padding='same',activation=act)(z2)
+    z3 = Conv2D(32,(3,3), padding='same',activation=act)(z3)
     z3 = BatchNormalization()(z3)
 
     z4 = Conv2D(32,(3,3),strides=(2,2),padding='same',activation=act)(z3)
@@ -70,50 +70,79 @@ def return_deepU(shape=(436,1024,3)):
     z4 = Conv2D(64,(3,3), padding='same',activation=act)(z4)
     z4 = BatchNormalization()(z4)
 
-    z5 = Conv2D(32,(3,3), padding='same',activation=act)(z4)
-    z5 = BatchNormalization()(z5)
-    z5 = Conv2D(32,(3,3), padding='same',activation=act)(z5)
-    z5 = BatchNormalization()(z5)
-    z5 = Conv2D(32,(3,3), padding='same',activation=act)(z5)
-    z5 = BatchNormalization()(z5)
+    ## z5 = MaxPooling3D(pool_size=(109,256,2), strides=(0,0,2))(z4)
+    z5 = Lambda(max_channels32,output_shape=(109,256,32))(z4)
+    # z5 = max_channels(z4, 32)
+    # z5 = Lambda(max_channels(z4, 32))
 
-    z6 = Conv2DTranspose(32,(3,3),strides=(2,2), padding='same')(z5)
+    z6 = Conv2D(32,(3,3), padding='same',activation=act)(z5)
+    z6 = BatchNormalization()(z6)
+    z6 = Conv2D(32,(3,3), padding='same',activation=act)(z6)
+    z6 = BatchNormalization()(z6)
+    z6 = Conv2D(32,(3,3), padding='same',activation=act)(z6)
+    z6 = BatchNormalization()(z6)
+
+    z6 = Conv2DTranspose(32,(3,3),strides=(2,2), padding='same')(z6)
     z7 = Concatenate(axis=-1)([z6,z3])
     z8 = BatchNormalization()(z7)
     z8 = Conv2D(64,(3,3), padding='same',activation=act)(z8)
     z8 = BatchNormalization()(z8)
 
-    z8 = Conv2D(32,(3,3), padding='same',activation=act)(z8)
-    z8 = BatchNormalization()(z8)
-    z8 = Conv2D(32,(3,3), padding='same',activation=act)(z8)
-    z8 = BatchNormalization()(z8)
-    z8 = Conv2D(32,(3,3), padding='same',activation=act)(z8)
-    z8 = BatchNormalization()(z8)
+    # z9 = MaxPooling3D(pool_size=(218,512,2), strides=(0,0,2))(z8)
+    z9 = Lambda(max_channels32,output_shape=(218,512,32))(z8)
+    # z9 = max_channels(z8, 32)
 
-    z9 = Conv2D(16,(3,3), padding='same',activation=act)(z8)
-    z9 = BatchNormalization()(z9)
-    z9 = Conv2D(16,(3,3), padding='same',activation=act)(z9)
-    z9 = BatchNormalization()(z9)
-    z9 = Conv2D(16,(3,3), padding='same',activation=act)(z9)
-    z9 = BatchNormalization()(z9)
+    z10 = Conv2D(32,(3,3), padding='same',activation=act)(z9)
+    z10 = BatchNormalization()(z10)
+    z10 = Conv2D(32,(3,3), padding='same',activation=act)(z10)
+    z10 = BatchNormalization()(z10)
+    z10 = Conv2D(32,(3,3), padding='same',activation=act)(z10)
+    z10 = BatchNormalization()(z10)
 
-    z10 = Conv2DTranspose(16,(3,3),strides=(2,2), padding='same')(z9)
-    z11 = Concatenate(axis=-1)([z10,z1])
-    z12 = BatchNormalization()(z11)
-    z12 = Conv2D(32,(3,3), padding='same',activation=act)(z12)
+    # z11 = MaxPooling3D(pool_size=(218,512,2), strides=(0,0,2))(z10)
+    z11 = Lambda(max_channels16,output_shape=(218,512,16))(z10)
+
+    z12 = Conv2D(16,(3,3), padding='same',activation=act)(z11)
     z12 = BatchNormalization()(z12)
     z12 = Conv2D(16,(3,3), padding='same',activation=act)(z12)
     z12 = BatchNormalization()(z12)
-    z12 = Conv2D(8,(3,3), padding='same',activation=act)(z12)
+    z12 = Conv2D(16,(3,3), padding='same',activation=act)(z12)
     z12 = BatchNormalization()(z12)
-    z12 = Conv2D(4,(3,3), padding='same',activation=act)(z12)
-    z12 = BatchNormalization()(z12)
-    z12 = Conv2D(2,(3,3), padding='same',activation=act)(z12)
-    z12 = BatchNormalization()(z12)
-    z12 = Conv2D(2,(3,3), padding='same',activation=keras.layers.LeakyReLU(alpha=0.3))(z12)
-    z13 = BatchNormalization()(z12)
 
-    model = Model(inputs=[I1,I2], outputs=[z13])
+    z13 = Conv2DTranspose(16,(3,3),strides=(2,2), padding='same')(z12)
+    z14 = Concatenate(axis=-1)([z13,z1])
+    z14 = BatchNormalization()(z14)
+
+    z15 = Conv2D(32,(3,3), padding='same',activation=act)(z14)
+    z15 = BatchNormalization()(z15)
+    # z15 = MaxPooling3D(pool_size=(436,1024,2), strides=(0,0,2))(z15)
+    z15 = Lambda(max_channels16,output_shape=(436,1024,16))(z15)
+    # z15 = max_channels(z15, 16)
+
+    z15 = Conv2D(16,(3,3), padding='same',activation=act)(z15)
+    z15 = BatchNormalization()(z15)
+    # z15 = MaxPooling3D(pool_size=(436,1024,2), strides=(0,0,2))(z15)
+    z15 = Lambda(max_channels8,output_shape=(436,1024,8))(z15)
+    # z15 = max_channels(z15, 8)
+
+    z15 = Conv2D(8,(3,3), padding='same',activation=act)(z15)
+    z15 = BatchNormalization()(z15)
+    # z15 = MaxPooling3D(pool_size=(436,1024,2), strides=(0,0,2))(z15)
+    z15 = Lambda(max_channels4,output_shape=(436,1024,4))(z15)
+    # z15 = max_channels(z15, 4)
+
+    z15 = Conv2D(4,(3,3), padding='same',activation=act)(z15)
+    z15 = BatchNormalization()(z15)
+    # z15 = MaxPooling3D(pool_size=(436,1024,2), strides=(0,0,2))(z15)
+    z15 = Lambda(max_channels2,output_shape=(436,1024,2))(z15)
+    # z15 = max_channels(z15, 2)
+
+    z15 = Conv2D(2,(3,3), padding='same',activation=act)(z15)
+    z15 = BatchNormalization()(z15)
+    z15 = Conv2D(2,(3,3), padding='same',activation=keras.layers.LeakyReLU(alpha=0.3))(z15)
+    z16 = BatchNormalization()(z15)
+
+    model = Model(inputs=[I1,I2], outputs=[z16])
     model.compile(loss="mse",optimizer='Adam')
 
     return model
@@ -168,7 +197,7 @@ model.fit_generator(imgen,epochs=2000)
 
 # model.fit([X1,X2],Y,epochs=10000)
 
-model.save_weights("data/deepU1.h5")
+model.save_weights("data/deepM1.h5")
 
 # y=model.predict([X1,X2])
 # y1 = flow_mag(y)

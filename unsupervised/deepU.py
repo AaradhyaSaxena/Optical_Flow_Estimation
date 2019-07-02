@@ -54,11 +54,11 @@ def return_deepU(shape=(436,1024,3)):
 
     z2 = Conv2D(16,(3,3),strides=(2,2),padding='same',activation=act)(z1)
     z2 = BatchNormalization()(z2)
-    z3 = Conv2D(32,(3,3), padding='same',activation=act)(z2)
-    z3 = BatchNormalization()(z3)
-    z3 = Conv2D(32,(3,3), padding='same',activation=act)(z2)
-    z3 = BatchNormalization()(z3)
-    z3 = Conv2D(32,(3,3), padding='same',activation=act)(z2)
+    # z3 = Conv2D(32,(3,3), padding='same',activation=act)(z2)
+    # z3 = BatchNormalization()(z3)
+    # z3 = Conv2D(32,(3,3), padding='same',activation=act)(z2)#z2
+    # z3 = BatchNormalization()(z3)
+    z3 = Conv2D(32,(3,3), padding='same',activation=act)(z2)#z2 
     z3 = BatchNormalization()(z3)
 
     z4 = Conv2D(32,(3,3),strides=(2,2),padding='same',activation=act)(z3)
@@ -154,25 +154,50 @@ model = compile_model(model_base)
 
 #-------------------DATA-------------------
 
-imgen=ImageSequence_fixed()
-[X1,X2],Y = imgen.__getitem__()
-
-# imgen=ImageSequence_new()
+# imgen=ImageSequence_fixed()
 # [X1,X2],Y = imgen.__getitem__()
+
+imgen=ImageSequence_new()
+[X1,X2],Y = imgen.__getitem__()
 
 #-------------------------Training-----------
 
-model.load_weights('../data/deepU1.h5')
+model.load_weights('../data/deepUc1.h5')
 
-# model.fit_generator(imgen,epochs=2000)
+model.fit_generator(imgen,epochs=2000)
 
-model.fit([X1,X2],Y,epochs=10000)
+# model.fit([X1,X2],Y,epochs=10000)
 
-model.save_weights("../data/deepU1_fxd_after500.h5")
+model.save_weights("../data/deepUc1.h5")
 
-# y=model.predict([X1,X2])
-# y1 = flow_mag(y)
+##-------------test----------------
+# import numpy as np
+# import matplotlib.pyplot as plt
+# from scipy import misc
+# from skimage.transform import resize
 
+
+# def read_image(file_path):
+#     Img=misc.imread(file_path)
+#     Img=resize(Img,(436,1024))
+#     return Img
+
+
+# I1=read_image("../data/frame_0001.png")
+# I2=read_image("../data/frame_0001.png")
+
+# x_batch = []
+# x_batch.append([I1,I2])
+# x_batch = np.array(x_batch, np.float32)
+
+# [X1,X2] = [x_batch[:,0,:,:,:],x_batch[:,1,:,:,:]]
+
+###-----------------------------------------------
+
+
+y=model.predict([X1,X2])
+y1 = flow_mag(y)
+# plt.imsave("test1",y1[0])
 
 # np.savez('sample_model1', flow =y1)
 
@@ -191,4 +216,7 @@ plt.imshow(y1[0])
 plt.imshow(y1[0])
 plt.imsave("temp1",y1[0])
 model.save_weights("data/sampleU12.h5")
+"""
+"""
+plt.imsave("tempY",Y[0])
 """
