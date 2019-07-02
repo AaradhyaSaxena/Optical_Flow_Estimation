@@ -41,7 +41,7 @@ def return_deepU(shape=(436,1024,3)):
     I1 = Input(shape=shape)
     I2 = Input(shape=shape)
 
-    act = "tanh"
+    act = "relu"
 
     I = Concatenate(axis=-1)([I1,I2])
     I = BatchNormalization()(I)
@@ -69,11 +69,7 @@ def return_deepU(shape=(436,1024,3)):
     z4 = BatchNormalization()(z4)
     z4 = Conv2D(64,(3,3), padding='same',activation=act)(z4)
     z4 = BatchNormalization()(z4)
-
-    ## z5 = MaxPooling3D(pool_size=(109,256,2), strides=(0,0,2))(z4)
     z5 = Lambda(max_channels32,output_shape=(109,256,32))(z4)
-    # z5 = max_channels(z4, 32)
-    # z5 = Lambda(max_channels(z4, 32))
 
     z6 = Conv2D(32,(3,3), padding='same',activation=act)(z5)
     z6 = BatchNormalization()(z6)
@@ -88,9 +84,7 @@ def return_deepU(shape=(436,1024,3)):
     z8 = Conv2D(64,(3,3), padding='same',activation=act)(z8)
     z8 = BatchNormalization()(z8)
 
-    # z9 = MaxPooling3D(pool_size=(218,512,2), strides=(0,0,2))(z8)
     z9 = Lambda(max_channels32,output_shape=(218,512,32))(z8)
-    # z9 = max_channels(z8, 32)
 
     z10 = Conv2D(32,(3,3), padding='same',activation=act)(z9)
     z10 = BatchNormalization()(z10)
@@ -99,7 +93,6 @@ def return_deepU(shape=(436,1024,3)):
     z10 = Conv2D(32,(3,3), padding='same',activation=act)(z10)
     z10 = BatchNormalization()(z10)
 
-    # z11 = MaxPooling3D(pool_size=(218,512,2), strides=(0,0,2))(z10)
     z11 = Lambda(max_channels16,output_shape=(218,512,16))(z10)
 
     z12 = Conv2D(16,(3,3), padding='same',activation=act)(z11)
@@ -115,60 +108,50 @@ def return_deepU(shape=(436,1024,3)):
 
     z15 = Conv2D(32,(3,3), padding='same',activation=act)(z14)
     z15 = BatchNormalization()(z15)
-    # z15 = MaxPooling3D(pool_size=(436,1024,2), strides=(0,0,2))(z15)
     z15 = Lambda(max_channels16,output_shape=(436,1024,16))(z15)
-    # z15 = max_channels(z15, 16)
 
     z15 = Conv2D(16,(3,3), padding='same',activation=act)(z15)
     z15 = BatchNormalization()(z15)
-    # z15 = MaxPooling3D(pool_size=(436,1024,2), strides=(0,0,2))(z15)
     z15 = Lambda(max_channels8,output_shape=(436,1024,8))(z15)
-    # z15 = max_channels(z15, 8)
 
     z15 = Conv2D(8,(3,3), padding='same',activation=act)(z15)
     z15 = BatchNormalization()(z15)
-    # z15 = MaxPooling3D(pool_size=(436,1024,2), strides=(0,0,2))(z15)
     z15 = Lambda(max_channels4,output_shape=(436,1024,4))(z15)
-    # z15 = max_channels(z15, 4)
 
     z15 = Conv2D(4,(3,3), padding='same',activation=act)(z15)
     z15 = BatchNormalization()(z15)
-    # z15 = MaxPooling3D(pool_size=(436,1024,2), strides=(0,0,2))(z15)
     z15 = Lambda(max_channels2,output_shape=(436,1024,2))(z15)
-    # z15 = max_channels(z15, 2)
 
-    z15 = Conv2D(2,(3,3), padding='same',activation=act)(z15)
+    z15 = Conv2D(2,(3,3), padding='same',activation="linear")(z15)
     z15 = BatchNormalization()(z15)
-    z15 = Conv2D(2,(3,3), padding='same',activation=keras.layers.LeakyReLU(alpha=0.3))(z15)
-    z16 = BatchNormalization()(z15)
+    z15 = Conv2D(2,(3,3), padding='same',activation="linear")(z15)
 
-    model = Model(inputs=[I1,I2], outputs=[z16])
-    model.compile(loss="mse",optimizer='Adam')
+    model = Model(inputs=[I1,I2], outputs=[z15])
+    # model.compile(loss="mse",optimizer='Adam')
 
     return model
 ###---------------------loss----------------------------
-def compile_model(model,lambda1 = 0.005):
+def compile_model(model,lambda1 = 0.05):
 
     I1=model.inputs[0]
     I2=model.inputs[1]
     o1=model.outputs[0] 
 
-    input1_rec=image_warp(I1,o1)
-    # input0_rec=image_warp(model.inputs[1],-model.outputs[0])
+    I2_rec=image_warp(I1,o1)
+    I1_rec=image_warp(I2,-o1)
 
     ux,uy=grad_xy(o1[:,:,:,:1])
     vx,vy=grad_xy(o1[:,:,:,1:2])
     sm_loss=lambda1*(K.mean(K.abs(ux*ux)+ K.abs(uy*uy)+ K.abs(vx*vx)+ K.abs(vy*vy)))
 
-    re_loss_mse = K.mean(K.square(I2 - input1_rec))
+    re_loss1=DSSIMObjective(kernel_size=50)(I2,I2_rec)
+    re_loss2=DSSIMObjective(kernel_size=50)(I1,I1_rec)
 
-    # loss_mse = K.mean(K.square(model.outputs[0] - Y))
+    total_loss = lambda1*sm_loss+ re_loss1 + re_loss2 
 
-    total_loss = lambda1*sm_loss+re_loss_mse # + loss_mse
-
-    model.add_loss(total_loss)
     model = Model(inputs=[I1,I2], outputs=[o1])
-    model.compile(loss="mse",optimizer='Adam')
+    model.add_loss(total_loss)
+    model.compile(optimizer='Adam')
    	
     return model
 
@@ -183,21 +166,21 @@ model = compile_model(model_base)
 
 #-------------------DATA-------------------
 
-# imgen=ImageSequence_fixed()
-# [X1,X2],Y = imgen.__getitem__()
-
-imgen=ImageSequence_new()
+imgen=ImageSequence_fixed()
 [X1,X2],Y = imgen.__getitem__()
+
+# imgen=ImageSequence_new()
+# [X1,X2],Y = imgen.__getitem__()
 
 #-------------------------Training-----------
 
-# model.load_weights('../data/grad_ssim_full1.h5')
+# model.load_weights('../data/deepM1.h5')
 
-model.fit_generator(imgen,epochs=2000)
+# model.fit_generator(imgen,epochs=2000)
 
-# model.fit([X1,X2],Y,epochs=10000)
+model.fit([X1,X2],None,epochs=10000)
 
-model.save_weights("data/deepM1.h5")
+model.save_weights("../data/deepM1.h5")
 
 # y=model.predict([X1,X2])
 # y1 = flow_mag(y)
@@ -211,7 +194,11 @@ model.save_weights("data/deepM1.h5")
 %matplotlib
 y=model.predict([X1,X2])
 y1 = flow_mag(y)
+plt.figure("flow_pred")
 plt.imshow(y1[0])
+plt.figure("true")
+y2 = flow_mag(Y)
+plt.imshow(y2[0])
 
 """
 
