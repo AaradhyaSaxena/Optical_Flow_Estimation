@@ -41,83 +41,91 @@ def return_deepU(shape=(436,1024,3)):
     I1 = Input(shape=shape)
     I2 = Input(shape=shape)
 
-    act = keras.layers.LeakyReLU(alpha=0.3)
+    #act = keras.layers.LeakyReLU(alpha=0.3)
+    act="tanh"
 
     I = Concatenate(axis=-1)([I1,I2])
-    # I = BatchNormalization()(I)
+    #I = BatchNormalization()(I)
     z1 = Conv2D(16,(3,3), padding='same',activation=act)(I)
-    z1 = BatchNormalization()(z1)
+    #z1 = BatchNormalization()(z1)
     z1 = Conv2D(16,(3,3), padding='same',activation=act)(z1)
-    z1 = BatchNormalization()(z1)
+    #z1 = BatchNormalization()(z1)
     z1 = Conv2D(16,(3,3), padding='same',activation=act)(z1)
-    z1 = BatchNormalization()(z1)
+    #z1 = BatchNormalization()(z1)
 
     z2 = Conv2D(16,(3,3),strides=(2,2),padding='same',activation=act)(z1)
-    z2 = BatchNormalization()(z2)
+    #z2 = BatchNormalization()(z2)
     z3 = Conv2D(32,(3,3), padding='same',activation=act)(z2)
-    z3 = BatchNormalization()(z3)
+    #z3 = BatchNormalization()(z3)
     z3 = Conv2D(32,(3,3), padding='same',activation=act)(z3)
-    z3 = BatchNormalization()(z3)
+    #z3 = BatchNormalization()(z3)
     z3 = Conv2D(32,(3,3), padding='same',activation=act)(z3)
-    z3 = BatchNormalization()(z3)
+    #z3 = BatchNormalization()(z3)
 
     z4 = Conv2D(32,(3,3),strides=(2,2),padding='same',activation=act)(z3)
-    z4 = BatchNormalization()(z4)
+    #z4 = BatchNormalization()(z4)
     z4 = Conv2D(64,(3,3), padding='same',activation=act)(z4)
-    z4 = BatchNormalization()(z4)
+    #z4 = BatchNormalization()(z4)
     z4 = Conv2D(64,(3,3), padding='same',activation=act)(z4)
-    z4 = BatchNormalization()(z4)
+    #z4 = BatchNormalization()(z4)
     z4 = Conv2D(64,(3,3), padding='same',activation=act)(z4)
-    z4 = BatchNormalization()(z4)
+    #z4 = BatchNormalization()(z4)
 
     z5 = Conv2D(32,(3,3), padding='same',activation=act)(z4)
-    z5 = BatchNormalization()(z5)
+    #z5 = BatchNormalization()(z5)
     z5 = Conv2D(32,(3,3), padding='same',activation=act)(z5)
-    z5 = BatchNormalization()(z5)
+    #z5 = BatchNormalization()(z5)
     z5 = Conv2D(32,(3,3), padding='same',activation=act)(z5)
-    z5 = BatchNormalization()(z5)
+    #z5 = BatchNormalization()(z5)
 
     z6 = Conv2DTranspose(32,(3,3),strides=(2,2), padding='same')(z5)
     z7 = Concatenate(axis=-1)([z6,z3])
-    z8 = BatchNormalization()(z7)
-    z8 = Conv2D(64,(3,3), padding='same',activation=act)(z8)
-    z8 = BatchNormalization()(z8)
+    #z8 = BatchNormalization()(z7)
+    z8 = Conv2D(64,(3,3), padding='same',activation=act)(z7)
+    #z8 = BatchNormalization()(z8)
 
     z8 = Conv2D(32,(3,3), padding='same',activation=act)(z8)
-    z8 = BatchNormalization()(z8)
+    #z8 = BatchNormalization()(z8)
     z8 = Conv2D(32,(3,3), padding='same',activation=act)(z8)
-    z8 = BatchNormalization()(z8)
+    #z8 = BatchNormalization()(z8)
     z8 = Conv2D(32,(3,3), padding='same',activation=act)(z8)
-    z8 = BatchNormalization()(z8)
+    #z8 = BatchNormalization()(z8)
 
     z9 = Conv2D(16,(3,3), padding='same',activation=act)(z8)
-    z9 = BatchNormalization()(z9)
+    #z9 = BatchNormalization()(z9)
     z9 = Conv2D(16,(3,3), padding='same',activation=act)(z9)
-    z9 = BatchNormalization()(z9)
+    #z9 = BatchNormalization()(z9)
     z9 = Conv2D(16,(3,3), padding='same',activation=act)(z9)
-    z9 = BatchNormalization()(z9)
+    #z9 = BatchNormalization()(z9)
 
     z10 = Conv2DTranspose(16,(3,3),strides=(2,2), padding='same')(z9)
     z11 = Concatenate(axis=-1)([z10,z1])
-    z12 = BatchNormalization()(z11)
-    z12 = Conv2D(32,(3,3), padding='same',activation=act)(z12)
-    z12 = BatchNormalization()(z12)
+    #z12 = BatchNormalization()(z11)
+    z12 = Conv2D(32,(3,3), padding='same',activation=act)(z11)
+    #z12 = BatchNormalization()(z12)
     z12 = Conv2D(16,(3,3), padding='same',activation=act)(z12)
-    z12 = BatchNormalization()(z12)
+    #z12 = BatchNormalization()(z12)
     z12 = Conv2D(8,(3,3), padding='same',activation=act)(z12)
-    z12 = BatchNormalization()(z12)
+    #z12 = BatchNormalization()(z12)
     z12 = Conv2D(4,(3,3), padding='same',activation=act)(z12)
-    z12 = BatchNormalization()(z12)
-    z12 = Conv2D(2,(3,3), padding='same',activation=act)(z12)
-    z12 = BatchNormalization()(z12)
+    #z12 = BatchNormalization()(z12)
+    z12 = Conv2D(2,(3,3), padding='same',activation="linear")(z12)
+    #z12 = BatchNormalization()(z12)
     z12 = Conv2D(2,(3,3), padding='same',activation="linear")(z12)
 
-    model = Model(inputs=[I1,I2], outputs=[z13])
-    # model.compile(loss="mse",optimizer='Adam')
+    model = Model(inputs=[I1,I2], outputs=[z12])
+    #model.compile(loss="mse",optimizer='Adam')
 
     return model
 ###---------------------loss----------------------------
-def compile_model(model,lambda1 = 0.05):
+def compile_model(model,lambda1 = 0.005):
+    s1 = tf.get_variable("sig1",  trainable=True,initializer=tf.constant([0.3]))
+    s2 = tf.get_variable("sig2",  trainable=True,initializer=tf.constant([0.7]))
+    s1_2=s1*s1
+    s2_2=s1*s1
+
+
+
 
     I1=model.inputs[0]
     I2=model.inputs[1]
@@ -128,7 +136,7 @@ def compile_model(model,lambda1 = 0.05):
 
     ux,uy=grad_xy(o1[:,:,:,:1])
     vx,vy=grad_xy(o1[:,:,:,1:2])
-    sm_loss=lambda1*(K.mean(K.abs(ux*ux)+ K.abs(uy*uy)+ K.abs(vx*vx)+ K.abs(vy*vy)))
+    sm_loss=(K.mean(K.abs(ux*ux)+ K.abs(uy*uy)+ K.abs(vx*vx)+ K.abs(vy*vy)))
 
     # re_loss_mse = K.mean(K.square(I2 - input1_rec))
     re_loss1=DSSIMObjective(kernel_size=50)(I2,I2_rec)
@@ -145,31 +153,39 @@ def compile_model(model,lambda1 = 0.05):
 
     # loss_mse = K.mean(K.square(model.outputs[0] - Y))
 
-    total_loss = lambda1*sm_loss+ re_loss1 + re_loss2 # + loss_mse
+    re_loss=re_loss1 + re_loss2
+
+
+    total_loss=(1/s1_2)*re_loss+(1/s2_2)*sm_loss+K.log(s1_2)+K.log(s2_2)
+
+
 
     model = Model(inputs=[I1,I2], outputs=[o1])
     model.add_loss(total_loss)
-    model.compile(optimizer='Adam')
+    model.compile(loss="mse",optimizer='rmsprop')
+    #model.compile(optimizer='rmsprop')
    	
     return model
 
 ###--------------------compile--------------------------
 
 model_base = return_deepU()
+model = compile_model(model_base,lambda1=0.01)
 
-model = compile_model(model_base)
-###---------------------debug
 
-# model = return_deepU()
+
+
 
 #-------------------DATA-------------------
-
-# imgen=ImageSequence_fixed()
-# [X1,X2],Y = imgen.__getitem__()
 
 imgen=ImageSequence_new()
 [X1,X2],Y = imgen.__getitem__()
 
+
+
+
+
+"""
 #-------------------------Training-----------
 
 model.load_weights('../data/deep_U.h5')
@@ -180,29 +196,8 @@ model.fit_generator(imgen,epochs=2000)
 
 model.save_weights("../data/deep_U.h5")
 
-##-------------test----------------
-# import numpy as np
-# import matplotlib.pyplot as plt
-# from scipy import misc
-# from skimage.transform import resize
 
 
-# def read_image(file_path):
-#     Img=misc.imread(file_path)
-#     Img=resize(Img,(436,1024))
-#     return Img
-
-
-# I1=read_image("../data/frame_0001.png")
-# I2=read_image("../data/frame_0001.png")
-
-# x_batch = []
-# x_batch.append([I1,I2])
-# x_batch = np.array(x_batch, np.float32)
-
-# [X1,X2] = [x_batch[:,0,:,:,:],x_batch[:,1,:,:,:]]
-
-###-----------------------------------------------
 
 
 y=model.predict([X1,X2])
@@ -213,12 +208,19 @@ y1 = flow_mag(y)
 
 ####--------------viz-------------------
 
-"""
 %matplotlib
 y=model.predict([X1,X2])
 y1 = flow_mag(y)
+y2 = flow_mag(Y)
+plt.figure("out")
 plt.imshow(y1[0])
+plt.figure("gt")
+plt.imshow(y2[0])
 
+plt.figure("X1")
+plt.imshow(X1[0])
+plt.figure("X2")
+plt.imshow(X2[0])
 """
 
 """
