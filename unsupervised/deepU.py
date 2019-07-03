@@ -124,14 +124,17 @@ def compile_model(model,lambda1 = 0.005):
     I2=model.inputs[1]
     o1=model.outputs[0] 
 
-    input1_rec=image_warp(I1,o1)
-    # input0_rec=image_warp(model.inputs[1],-model.outputs[0])
+    # this is to calculate the inverse_warp
+    o2 = image_warp(-o1,o1)
+
+    I2_rec=image_warp(I1,o1)
+    I1_rec=image_warp(I2,o2)
 
     ux,uy=grad_xy(o1[:,:,:,:1])
     vx,vy=grad_xy(o1[:,:,:,1:2])
     sm_loss=lambda1*(K.mean(K.abs(ux*ux)+ K.abs(uy*uy)+ K.abs(vx*vx)+ K.abs(vy*vy)))
 
-    re_loss_mse = K.mean(K.square(I2 - input1_rec))
+    re_loss_mse = K.mean(K.square(I2 - I1_rec))
 
     # loss_mse = K.mean(K.square(model.outputs[0] - Y))
 
