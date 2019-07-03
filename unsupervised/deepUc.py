@@ -41,7 +41,8 @@ def return_deepU(shape=(436,1024,3)):
     I1 = Input(shape=shape)
     I2 = Input(shape=shape)
 
-    act = keras.layers.LeakyReLU(alpha=0.3)
+    # act = keras.layers.LeakyReLU(alpha=0.3)
+    act = "tanh"
 
     I = Concatenate(axis=-1)([I1,I2])
     # I = BatchNormalization()(I)
@@ -108,11 +109,11 @@ def return_deepU(shape=(436,1024,3)):
     z12 = BatchNormalization()(z12)
     z12 = Conv2D(4,(3,3), padding='same',activation=act)(z12)
     z12 = BatchNormalization()(z12)
-    z12 = Conv2D(2,(3,3), padding='same',activation=act)(z12)
+    z12 = Conv2D(2,(3,3), padding='same',activation="linear")(z12)
     z12 = BatchNormalization()(z12)
     z12 = Conv2D(2,(3,3), padding='same',activation="linear")(z12)
 
-    model = Model(inputs=[I1,I2], outputs=[z13])
+    model = Model(inputs=[I1,I2], outputs=[z12])
     # model.compile(loss="mse",optimizer='Adam')
 
     return model
@@ -123,34 +124,25 @@ def compile_model(model,lambda1 = 0.05):
     I2=model.inputs[1]
     o1=model.outputs[0] 
 
+    # this is to calculate the inverse_warp
+    o2 = image_warp(-o1,o1)
+
     I2_rec=image_warp(I1,o1)
-    I1_rec=image_warp(I2,-o1)
+    I1_rec=image_warp(I2,o2)
 
     ux,uy=grad_xy(o1[:,:,:,:1])
     vx,vy=grad_xy(o1[:,:,:,1:2])
     sm_loss=lambda1*(K.mean(K.abs(ux*ux)+ K.abs(uy*uy)+ K.abs(vx*vx)+ K.abs(vy*vy)))
 
-    # re_loss_mse = K.mean(K.square(I2 - input1_rec))
     re_loss1=DSSIMObjective(kernel_size=50)(I2,I2_rec)
     re_loss2=DSSIMObjective(kernel_size=50)(I1,I1_rec)
 
-###############################################
-    # input1_rec=image_warp(model.inputs[0],model.outputs[0],num_batch=b_size)
-    # input0_rec=image_warp(model.inputs[1],-model.outputs[0],num_batch=b_size)
-    # ux,uy=grad_xy(model.outputs[0][:,:,:,:1])
-    # vx,vy=grad_xy(model.outputs[0][:,:,:,1:2])
-    # sm_loss=lambda1*(K.mean(K.abs(ux*ux)+ K.abs(uy*uy)+ K.abs(vx*vx)+ K.abs(vy*vy)))
-    # re_loss=DSSIMObjective(kernel_size=50)(model.inputs[1],input1_rec)
-################################################
-
-    # loss_mse = K.mean(K.square(model.outputs[0] - Y))
-
-    total_loss = lambda1*sm_loss+ re_loss1 + re_loss2 # + loss_mse
+    total_loss = lambda1*sm_loss+ re_loss1 + re_loss2 
 
     model = Model(inputs=[I1,I2], outputs=[o1])
     model.add_loss(total_loss)
-    model.compile(optimizer='Adam')
-   	
+    model.compile(optimizer=keras.optimizers.Adadelta(lr=1.0, rho=0.95, epsilon=None, decay=0.0))
+    
     return model
 
 ###--------------------compile--------------------------
@@ -164,21 +156,21 @@ model = compile_model(model_base)
 
 #-------------------DATA-------------------
 
-# imgen=ImageSequence_fixed()
-# [X1,X2],Y = imgen.__getitem__()
-
-imgen=ImageSequence_new()
+imgen=ImageSequence_fixed()
 [X1,X2],Y = imgen.__getitem__()
+
+# imgen=ImageSequence_new()
+# [X1,X2],Y = imgen.__getitem__()
 
 #-------------------------Training-----------
 
-model.load_weights('../data/deep_U.h5')
+# model.load_weights('../data/deep_U.h5')
 
-model.fit_generator(imgen,epochs=2000)
+# model.fit_generator(imgen,epochs=2000)
 
-# model.fit([X1,X2],Y,epochs=10000)
+model.fit([X1,X2],Y,epochs=10000)
 
-model.save_weights("../data/deep_U.h5")
+model.save_weights("../data/deep_Uc_batch_old_loss.h5")
 
 ##-------------test----------------
 # import numpy as np
@@ -214,17 +206,21 @@ y1 = flow_mag(y)
 ####--------------viz-------------------
 
 """
-%matplotlib
 y=model.predict([X1,X2])
 y1 = flow_mag(y)
+%matplotlib
+plt.figure("flow_pred")
 plt.imshow(y1[0])
+plt.figure("scene")
+plt.imshow(X1[0])
 
 """
 
 """
 %matplotlib
 plt.imshow(y1[0])
-plt.imsave("temp1",y1[0])
+plt.imsave("tempy1",y1[0])
+plt.imsave("tempX1",X1[0])
 model.save_weights("data/sampleU12.h5")
 """
 """

@@ -41,10 +41,10 @@ def return_deepU(shape=(436,1024,3)):
     I1 = Input(shape=shape)
     I2 = Input(shape=shape)
 
-    act = "relu"
+    act = "tanh"
 
     I = Concatenate(axis=-1)([I1,I2])
-    I = BatchNormalization()(I)
+    # I = BatchNormalization()(I)
     z1 = Conv2D(16,(3,3), padding='same',activation=act)(I)
     z1 = BatchNormalization()(z1)
     z1 = Conv2D(16,(3,3), padding='same',activation=act)(z1)
@@ -52,7 +52,8 @@ def return_deepU(shape=(436,1024,3)):
     z1 = Conv2D(16,(3,3), padding='same',activation=act)(z1)
     z1 = BatchNormalization()(z1)
 
-    z2 = Conv2D(16,(3,3),strides=(2,2),padding='same',activation=act)(z1)
+    z2 = MaxPooling2D(pool_size=(2, 2), strides=2)(z1)
+    # z2 = Conv2D(16,(3,3),strides=(2,2),padding='same',activation=act)(z1)
     z2 = BatchNormalization()(z2)
     z3 = Conv2D(32,(3,3), padding='same',activation=act)(z2)
     z3 = BatchNormalization()(z3)
@@ -61,7 +62,8 @@ def return_deepU(shape=(436,1024,3)):
     z3 = Conv2D(32,(3,3), padding='same',activation=act)(z3)
     z3 = BatchNormalization()(z3)
 
-    z4 = Conv2D(32,(3,3),strides=(2,2),padding='same',activation=act)(z3)
+    z4 = MaxPooling2D(pool_size=(2, 2), strides=2)(z3)
+    # z4 = Conv2D(32,(3,3),strides=(2,2),padding='same',activation=act)(z3)
     z4 = BatchNormalization()(z4)
     z4 = Conv2D(64,(3,3), padding='same',activation=act)(z4)
     z4 = BatchNormalization()(z4)
@@ -137,8 +139,11 @@ def compile_model(model,lambda1 = 0.05):
     I2=model.inputs[1]
     o1=model.outputs[0] 
 
+    # this is to calculate the inverse_warp
+    o2 = image_warp(-o1,o1)
+
     I2_rec=image_warp(I1,o1)
-    I1_rec=image_warp(I2,-o1)
+    I1_rec=image_warp(I2,o2)
 
     ux,uy=grad_xy(o1[:,:,:,:1])
     vx,vy=grad_xy(o1[:,:,:,1:2])
@@ -151,7 +156,7 @@ def compile_model(model,lambda1 = 0.05):
 
     model = Model(inputs=[I1,I2], outputs=[o1])
     model.add_loss(total_loss)
-    model.compile(optimizer='Adam')
+    model.compile(optimizer=keras.optimizers.Adadelta(lr=1.0, rho=0.95, epsilon=None, decay=0.0))
    	
     return model
 
@@ -166,24 +171,24 @@ model = compile_model(model_base)
 
 #-------------------DATA-------------------
 
-imgen=ImageSequence_fixed()
-[X1,X2],Y = imgen.__getitem__()
-
-# imgen=ImageSequence_new()
+# imgen=ImageSequence_fixed()
 # [X1,X2],Y = imgen.__getitem__()
+
+imgen=ImageSequence_new()
+[X1,X2],Y = imgen.__getitem__()
 
 #-------------------------Training-----------
 
-# model.load_weights('../data/deepM1.h5')
+# model.load_weights('../data/deepM.h5')
 
-# model.fit_generator(imgen,epochs=2000)
+model.fit_generator(imgen,epochs=2000)
 
-model.fit([X1,X2],None,epochs=10000)
+# model.fit([X1,X2],None,epochs=10000)
 
-model.save_weights("../data/deepM1.h5")
+model.save_weights("../data/deepM.h5")
 
-# y=model.predict([X1,X2])
-# y1 = flow_mag(y)
+y=model.predict([X1,X2])
+y1 = flow_mag(y)
 
 
 # np.savez('sample_model1', flow =y1)
@@ -191,14 +196,13 @@ model.save_weights("../data/deepM1.h5")
 ####--------------viz-------------------
 
 """
-%matplotlib
 y=model.predict([X1,X2])
 y1 = flow_mag(y)
+%matplotlib
 plt.figure("flow_pred")
 plt.imshow(y1[0])
-plt.figure("true")
-y2 = flow_mag(Y)
-plt.imshow(y2[0])
+plt.figure("scene")
+plt.imshow(X1[0])
 
 """
 

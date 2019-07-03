@@ -124,9 +124,6 @@ def compile_model(model,lambda1 = 0.005):
     s1_2=s1*s1
     s2_2=s1*s1
 
-
-
-
     I1=model.inputs[0]
     I2=model.inputs[1]
     o1=model.outputs[0] 
@@ -162,7 +159,7 @@ def compile_model(model,lambda1 = 0.005):
 
     model = Model(inputs=[I1,I2], outputs=[o1])
     model.add_loss(total_loss)
-    model.compile(loss="mse",optimizer='rmsprop')
+    model.compile(loss="mse",optimizer=keras.optimizers.Adadelta(lr=1.0, rho=0.95, epsilon=None, decay=0.0))
     #model.compile(optimizer='rmsprop')
    	
     return model
