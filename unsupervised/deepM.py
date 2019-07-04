@@ -33,6 +33,7 @@ import tensorflow as tf
 from generator import *
 # from model import *
 from model_utils import *
+from NewLoss import *
 
 ###-----------------Model-----------------------
 
@@ -181,15 +182,22 @@ imgen=ImageSequence_new()
 
 # model.load_weights('../data/deepM.h5')
 
-model.fit_generator(imgen,epochs=2000)
+# model.fit_generator(imgen,epochs=2000)
 
 # model.fit([X1,X2],None,epochs=10000)
 
-model.save_weights("../data/deepM.h5")
+# model.save_weights("../data/deepM.h5")
 
-y=model.predict([X1,X2])
-y1 = flow_mag(y)
 
+###_--------------------test------------------
+
+# imgen=ImageSequence_new()
+# [X1,X2],Y = imgen.__getitem__()
+
+# y=model.predict([X1,X2])
+# y1 = flow_mag(y)
+# plt.imsave("test5y",y1[0])
+# plt.imsave("test5X",X1[0])
 
 # np.savez('sample_model1', flow =y1)
 

@@ -30,7 +30,7 @@ import keras_contrib.backend as KC
 from keras.utils import multi_gpu_model
 import tensorflow as tf
 from generator import *
-from model import *
+# from model import *
 
 
 ####---------------LOSS--------------------
@@ -170,6 +170,29 @@ def flow_mag(y):
 
 ##############################################
 
+def read_flow(filename):
+    if filename.endswith('.flo'):
+        flow = read_flo_file(filename)
+
+    return flow
+###--------------------------    
+def read_flo_file(filename):
+    f = open(filename, 'rb')
+    magic = np.fromfile(f, np.float32, count=1)
+    data2d = None
+
+    if 202021.25 != magic:
+        print('Magic number incorrect. Invalid .flo file')
+    else:
+        w = np.fromfile(f, np.int32, count=1)
+        h = np.fromfile(f, np.int32, count=1)
+        # print("Reading %d x %d flow file in .flo format" % (h, w))
+        data2d = np.fromfile(f, np.float32, count=2 * w * h)
+        # reshape data into 3D array (columns, rows, channels)
+        data2d = np.resize(data2d, (h[0], w[0], 2))
+    f.close()
+    return data2d
+###-----------------------------
 
 
 
@@ -217,18 +240,8 @@ def flow_mag(y):
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-##--------------------------------------------
+###------dirty_hard_coded_stuff---------------
+###-------------------------------------------
 
 def max_channels32(inputs, num_units = 32, axis=None):
     shape = inputs.get_shape().as_list()

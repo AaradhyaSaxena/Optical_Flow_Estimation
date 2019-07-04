@@ -156,21 +156,21 @@ model = compile_model(model_base)
 
 #-------------------DATA-------------------
 
-imgen=ImageSequence_fixed()
-[X1,X2],Y = imgen.__getitem__()
-
-# imgen=ImageSequence_new()
+# imgen=ImageSequence_fixed()
 # [X1,X2],Y = imgen.__getitem__()
+
+imgen=ImageSequence_new()
+[X1,X2],Y = imgen.__getitem__()
 
 #-------------------------Training-----------
 
-# model.load_weights('../data/deep_U.h5')
+model.load_weights('../data/deep_Uc.h5')
 
 # model.fit_generator(imgen,epochs=2000)
 
-model.fit([X1,X2],Y,epochs=10000)
+# model.fit([X1,X2],Y,epochs=1000)
 
-model.save_weights("../data/deep_Uc_batch_old_loss.h5")
+# model.save_weights("../data/deep_Uc.h5")
 
 ##-------------test----------------
 # import numpy as np
@@ -196,10 +196,13 @@ model.save_weights("../data/deep_Uc_batch_old_loss.h5")
 
 ###-----------------------------------------------
 
+imgen=ImageSequence_new()
+[X1,X2],Y = imgen.__getitem__()
 
 y=model.predict([X1,X2])
 y1 = flow_mag(y)
-# plt.imsave("test1",y1[0])
+# plt.imsave("test1y",y1[0])
+# plt.imsave("test1X",X1[0])
 
 # np.savez('sample_model1', flow =y1)
 
