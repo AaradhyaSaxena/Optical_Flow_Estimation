@@ -159,12 +159,12 @@ model = compile_model(model_base)
 # imgen=ImageSequence_fixed()
 # [X1,X2],Y = imgen.__getitem__()
 
-imgen=ImageSequence_new()
-[X1,X2],Y = imgen.__getitem__()
+# imgen=ImageSequence_new()
+# [X1,X2],Y = imgen.__getitem__()
 
 #-------------------------Training-----------
 
-model.load_weights('../data/deep_Uc.h5')
+# model.load_weights('../data/deep_Uc.h5')
 
 # model.fit_generator(imgen,epochs=2000)
 
