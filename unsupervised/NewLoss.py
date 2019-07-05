@@ -62,10 +62,10 @@ def occLoss(i1,i2,o1, occ_punishment =0.1):
 	return occ_loss
 ######------------------------------------------------------
 
-imgen=ImageSequence_fixed()
-[X1,X2],Y = imgen.__getitem__()
+# imgen=ImageSequence_fixed()
+# [X1,X2],Y = imgen.__getitem__()
 
-loss = occLoss(X1,X2,Y)
+# loss = occLoss(X1,X2,Y)
 
 ######------------------------------------------------------
 

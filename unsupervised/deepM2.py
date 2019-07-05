@@ -133,8 +133,9 @@ def return_deepU(shape=(436,1024,3)):
     # model.compile(loss="mse",optimizer='Adam')
 
     return model
-###---------------------loss----------------------------
-###--------occlusion_aware_loss-------------------------
+
+###------------------------loss----------------------------------
+###------------------occlusion_aware_loss-------------------------
 def compile_model(model,lambda_smoothness = 0.05, lambda_flow=0.0001, lambda_mse=0.1, occ_punishment = 0.01):
 
     i1=model.inputs[0]
@@ -150,8 +151,8 @@ def compile_model(model,lambda_smoothness = 0.05, lambda_flow=0.0001, lambda_mse
     flow_f, flow_b = flow_error(o1,o2)
 
     ###--------Occlusion_aware_mse_rec_image-------------------------------------
-    occ_loss1 = (tf.reduce_sum(tf.boolean_mask(charbonnier(err_f), mask_f)))#/(436*1024)
-    occ_loss2 = (tf.reduce_sum(tf.boolean_mask(charbonnier(err_b), mask_b)))#/(436*1024)
+    occ_loss1 = (tf.reduce_sum(tf.boolean_mask(charbonnier(err_f), mask_f))) # /(436*1024)
+    occ_loss2 = (tf.reduce_sum(tf.boolean_mask(charbonnier(err_b), mask_b))) # /(436*1024)
     occ_loss = (occ_loss1 + occ_loss2)*lambda_mse
 
     ###--------Occlusion_aware_mse_flow------------------------------------
@@ -202,14 +203,14 @@ model = compile_model(model_base)
 # imgen=ImageSequence_fixed()
 # [X1,X2],Y = imgen.__getitem__()
 
-imgen=ImageSequence_new()
-[X1,X2],Y = imgen.__getitem__()
+# imgen=ImageSequence_new()
+# [X1,X2],Y = imgen.__getitem__()
 
 #-------------------------Training-----------
 
 # model.load_weights('../data/deepM2.h5')
 
-model.fit_generator(imgen,epochs=2000)
+# model.fit_generator(imgen,epochs=2000)
 
 # model.fit([X1,X2],None,epochs=5000)
 

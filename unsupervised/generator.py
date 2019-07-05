@@ -18,7 +18,7 @@ from PIL import Image
 ###### this gives a defined batch as o/p not a random batch ###########
 
 class ImageSequence_fixed(Sequence):
-    def __init__(self,  batch_size=4, input_size=(436, 1024),f_gap=1):
+    def __init__(self,  batch_size=2, input_size=(436, 1024),f_gap=1):
         self.image_seq_path="/media/newhd/data/flow/MPI_SINTEL/MPI-Sintel-complete/training/albedo/"
         self.flow_seq_path="/media/newhd/data/flow/MPI_SINTEL/MPI-Sintel-complete/training/flow/"
 
@@ -131,8 +131,8 @@ class ImageSequence_fixed(Sequence):
 
 
         # y_flow=np.random.random((x_batch1.shape[:-1]+(2,)))
-        return ([x_batch[:,0,:,:,:],x_batch[:,1,:,:,:]],flow_batch)
-        # return ([x_batch[:,0,:,:,:],x_batch[:,1,:,:,:]],None)
+        # return ([x_batch[:,0,:,:,:],x_batch[:,1,:,:,:]],flow_batch)
+        return ([x_batch[:,0,:,:,:],x_batch[:,1,:,:,:]],None)
         #return (x_batch1,x_batch2,None)
         #return x_batch
 
@@ -210,7 +210,7 @@ class ImageSequence_fixed(Sequence):
 ###### this will provide random batches ##############################
 
 class ImageSequence_new(Sequence):
-    def __init__(self,  batch_size=4, input_size=(436, 1024),f_gap=1):
+    def __init__(self,  batch_size=2, input_size=(436, 1024),f_gap=1):
         self.image_seq_path="/media/newhd/data/flow/MPI_SINTEL/MPI-Sintel-complete/training/albedo/"
         self.flow_seq_path="/media/newhd/data/flow/MPI_SINTEL/MPI-Sintel-complete/training/flow/"
 

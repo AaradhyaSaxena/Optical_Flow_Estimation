@@ -122,7 +122,7 @@ def compile_model(model,lambda1 = 0.005):
     s1 = tf.get_variable("sig1",  trainable=True,initializer=tf.constant([0.3]))
     s2 = tf.get_variable("sig2",  trainable=True,initializer=tf.constant([0.7]))
     s1_2=s1*s1
-    s2_2=s1*s1
+    s2_2=s2*s2
 
     I1=model.inputs[0]
     I2=model.inputs[1]
