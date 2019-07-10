@@ -133,3 +133,85 @@ def return_deepM(shape=(436,1024,3)):
 
     return model
 #########################----------------------------------
+
+def return_deepU(shape=(436,1024,3)):
+
+    I1 = Input(shape=shape)
+    I2 = Input(shape=shape)
+
+    act = "tanh"
+
+    I = Concatenate(axis=-1)([I1,I2])
+    # I = BatchNormalization()(I)
+    z1 = Conv2D(16,(3,3), padding='same',activation=act)(I)
+    z1 = BatchNormalization()(z1)
+    z1 = Conv2D(16,(3,3), padding='same',activation=act)(z1)
+    z1 = BatchNormalization()(z1)
+    z1 = Conv2D(16,(3,3), padding='same',activation=act)(z1)
+    z1 = BatchNormalization()(z1)
+
+    z2 = Conv2D(16,(3,3),strides=(2,2),padding='same',activation=act)(z1)
+    z2 = BatchNormalization()(z2)
+    z3 = Conv2D(32,(3,3), padding='same',activation=act)(z2)
+    z3 = BatchNormalization()(z3)
+    z3 = Conv2D(32,(3,3), padding='same',activation=act)(z3)
+    z3 = BatchNormalization()(z3)
+    z3 = Conv2D(32,(3,3), padding='same',activation=act)(z3)
+    z3 = BatchNormalization()(z3)
+
+    z4 = Conv2D(32,(3,3),strides=(2,2),padding='same',activation=act)(z3)
+    z4 = BatchNormalization()(z4)
+    z4 = Conv2D(64,(3,3), padding='same',activation=act)(z4)
+    z4 = BatchNormalization()(z4)
+    z4 = Conv2D(64,(3,3), padding='same',activation=act)(z4)
+    z4 = BatchNormalization()(z4)
+    z4 = Conv2D(64,(3,3), padding='same',activation=act)(z4)
+    z4 = BatchNormalization()(z4)
+
+    z5 = Conv2D(32,(3,3), padding='same',activation=act)(z4)
+    z5 = BatchNormalization()(z5)
+    z5 = Conv2D(32,(3,3), padding='same',activation=act)(z5)
+    z5 = BatchNormalization()(z5)
+    z5 = Conv2D(32,(3,3), padding='same',activation=act)(z5)
+    z5 = BatchNormalization()(z5)
+
+    z6 = Conv2DTranspose(32,(3,3),strides=(2,2), padding='same')(z5)
+    z7 = Concatenate(axis=-1)([z6,z3])
+    z8 = BatchNormalization()(z7)
+    z8 = Conv2D(64,(3,3), padding='same',activation=act)(z8)
+    z8 = BatchNormalization()(z8)
+
+    z8 = Conv2D(32,(3,3), padding='same',activation=act)(z8)
+    z8 = BatchNormalization()(z8)
+    z8 = Conv2D(32,(3,3), padding='same',activation=act)(z8)
+    z8 = BatchNormalization()(z8)
+    z8 = Conv2D(32,(3,3), padding='same',activation=act)(z8)
+    z8 = BatchNormalization()(z8)
+
+    z9 = Conv2D(16,(3,3), padding='same',activation=act)(z8)
+    z9 = BatchNormalization()(z9)
+    z9 = Conv2D(16,(3,3), padding='same',activation=act)(z9)
+    z9 = BatchNormalization()(z9)
+    z9 = Conv2D(16,(3,3), padding='same',activation=act)(z9)
+    z9 = BatchNormalization()(z9)
+
+    z10 = Conv2DTranspose(16,(3,3),strides=(2,2), padding='same')(z9)
+    z11 = Concatenate(axis=-1)([z10,z1])
+    z12 = BatchNormalization()(z11)
+    z12 = Conv2D(32,(3,3), padding='same',activation=act)(z12)
+    z12 = BatchNormalization()(z12)
+    z12 = Conv2D(16,(3,3), padding='same',activation=act)(z12)
+    z12 = BatchNormalization()(z12)
+    z12 = Conv2D(8,(3,3), padding='same',activation=act)(z12)
+    z12 = BatchNormalization()(z12)
+    z12 = Conv2D(4,(3,3), padding='same',activation=act)(z12)
+    z12 = BatchNormalization()(z12)
+    z12 = Conv2D(2,(3,3), padding='same',activation="linear")(z12)
+    z12 = BatchNormalization()(z12)
+    z12 = Conv2D(2,(3,3), padding='same',activation="linear")(z12)
+
+    model = Model(inputs=[I1,I2], outputs=[z12])
+
+    return model
+####----------------------------------------------------------------
+

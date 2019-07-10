@@ -49,7 +49,12 @@ def c_mseAbs(y_true,y_pred):
     return loss
 
 def cconv(image, g_kernel):
+
     g_kernel=g_kernel[:,:,np.newaxis,np.newaxis]
+
+    n_channel=K.get_variable_shape(image)[-1]
+    g_kernel=np.tile(g_kernel,[1,1,n_channel,n_channel])
+
     d_kernel=tf.Variable(g_kernel)
     #image=tf.Variable(image)
     out=tf.nn.conv2d(image,d_kernel,strides=[1, 1, 1, 1], padding='VALID')

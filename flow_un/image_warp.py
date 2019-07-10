@@ -2,9 +2,6 @@ import tensorflow as tf
 import  keras.backend as  K
 
 
-
-
-
 def image_warp(im, flow,num_batch=2):
     """
     Performs a backward warp of an image using the predicted flow.
