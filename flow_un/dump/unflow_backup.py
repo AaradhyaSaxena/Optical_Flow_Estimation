@@ -45,6 +45,29 @@ def combined(shape=(436,1024,3)):
     model_all = Model(inputs=[I1,I2], outputs=[F1,F2])
     return model_all, model
 
+
+# def return_grid_np(grid_shape=(436,1024)):
+#     grid_y = np.tile(np.reshape(np.arange(0, stop=grid_shape[0]), [-1, 1,  1]),
+#         [1, grid_shape[1], 1 ])
+#     grid_x = np.tile(np.reshape(np.arange(0, stop=grid_shape[1]), [1, -1,  1]),
+#         [grid_shape[0], 1, 1 ])
+#     grid = np.concatenate([grid_x, grid_y],axis=-1)      #grid shape=(13, 13, 2)
+#     grid=grid.astype("float32")
+#     return grid
+
+# #def return_grid(y_pred,grid_shape):
+# def return_grid(grid_shape=(436,1024),batch_size=4):
+#     grid_y = K.tile(K.reshape(K.arange(0, stop=grid_shape[0]), [-1, 1,  1]),
+#         [1, grid_shape[1], 1 ])
+#     grid_x = K.tile(K.reshape(K.arange(0, stop=grid_shape[1]), [1, -1,  1]),
+#         [grid_shape[0], 1, 1])
+#     grid = K.concatenate([grid_x, grid_y])
+#     grid=tf.reshape(grid,(1,)+grid_shape+(2,))
+#     grid=K.tile(grid,[batch_size,1,1,1])
+#     grid = K.cast(grid, dtype="float32")
+#     #grid = K.cast(grid, K.dtype(y_pred))
+#     return grid
+
 ###-----------------compile_model---------------------------
 def compile_model(model1,lambda_smoothness=0.01,lambda_ssim=5,lambda_mse=0.0002,lambda_flow=0.0001,occ_punishment=0.0002):
 
@@ -52,36 +75,52 @@ def compile_model(model1,lambda_smoothness=0.01,lambda_ssim=5,lambda_mse=0.0002,
     i2=model1.inputs[1]
     o1=model1.outputs[0]
     o2=model1.outputs[1]
+    
+    #------flow consistiancy loss------
+    # grid=return_grid(batch_size=2)
+    # grid_recon1 = image_warp((image_warp(grid,o2)),o1)
+    # grid_recon2 = image_warp((image_warp(grid,o1)),o2)
+    #
+    # grid_ux,grid_uy = grad_xy(grid)
+    # grid_rec_ux,grid_rec_uy = grad_xy(grid_recon1)
+    # grid_rec_ux,grid_rec_uy = grad_xy(grid_recon2)
+    # mse_grid_grad = K.mean(K.square(grid_ux-grid_rec_ux)) + K.mean(K.square(grid_ux-grid_rec_ux)) + K.mean(K.square(grid_uy-grid_rec_uy)) + K.mean(K.square(grid_uy-grid_rec_uy))
+    # mse_grid = K.mean(K.square(grid-grid_recon1)) + K.mean(K.square(grid-grid_recon2))
 
-    ###--------Flow_continuity------------------------------------------------
+    ###--------Flow_smoothness------------------------------------------------
     double_recon1 = image_warp((image_warp(i1,o2)),o1)
     double_recon2 = image_warp((image_warp(i2,o1)),o2)
     mse_image_recon = K.mean(K.square(i1-double_recon1)) + K.mean(K.square(i2-double_recon2))       
 
 
-    ###--------Smoothness--------------------------------------------
+    ###--------Gradient_smoothness--------------------------------------------
+    ux,uy=grad_xy(o1[:,:,:,:1])
+    vx,vy=grad_xy(o1[:,:,:,1:2])
+    #-----------------------------------
+    # sm_loss_o1 = K.mean(K.abs(ux*ux)+ K.abs(uy*uy)+ K.abs(vx*vx)+ K.abs(vy*vy))
+    # ux,uy=grad_xy(o2[:,:,:,:1])
+    # vx,vy=grad_xy(o2[:,:,:,1:2])
+    # sm_loss_o2 = K.mean(K.abs(ux*ux)+ K.abs(uy*uy)+ K.abs(vx*vx)+ K.abs(vy*vy))
+    # sm_loss = (sm_loss_o1 + sm_loss_o2) 
+    
+
+    ###--------Spatial_smoothness---------------------------------------------
     g1 = tf.image.rgb_to_grayscale(i1[:,:,:,:])
     i1x,i1y=grad_xy(g1[:,:,:,:1])
+    # edge_sm = K.abs(ux)*K.exp(-(K.abs(i1x))) + K.abs(vy)*K.exp(-(K.abs(i1y)))
+    edge_sm = K.abs(ux)*(1-K.exp(-(K.abs(i1y)))) + K.abs(vy)*(1-K.exp(-(K.abs(i1x))))
 
-    fm = flow_mag_tensor(o1)
-    fmx, fmy = grad_xy(fm[:,:,:])
-
-    # ux,uy=grad_xy(o1[:,:,:,:1])
-    # vx,vy=grad_xy(o1[:,:,:,1:2])
-    # body_sm_loss = K.mean(K.abs(ux*ux)+ K.abs(uy*uy)+ K.abs(vx*vx)+ K.abs(vy*vy))
-
-    edge_sm_new = K.abs(fmx)*(1-K.exp(-(K.abs(i1y)))) + K.abs(fmy)*(1-K.exp(-(K.abs(i1x))))
-    # edge_sm_old = K.abs(fmx)*K.exp(-(K.abs(i1x))) + K.abs(fmy)*K.exp(-(K.abs(i1y)))
-    # sm_loss = body_sm_loss*(0.01) + edge_sm_old*(0.01)
 
     ###--------Reconstruction_loss_ssim_(occlusion_not considered)
     i1_rec=image_warp(i2,o1)
     i2_rec=image_warp(i1,o2)
-
-    ###-----contrast_and_luminous-----------------------------------
-    # CL_loss = DSSIM_updated(i2,i2_rec) + DSSIM_updated(i1,i1_rec)
-
-	###-------------------------------------------------------------
+ 
+    # """
+    #SSIM LOSS
+    # re_loss1=DSSIMObjective(kernel_size=50)(i2,i2_rec)
+    # re_loss2=DSSIMObjective(kernel_size=50)(i1,i1_rec)
+    # re_loss_ssim = (re_loss1 + re_loss2)
+    # """
 
     #gradient loss
     mse = K.mean(K.square(i2-i2_rec)) +K.mean(K.square(i1-i1_rec))
@@ -90,11 +129,17 @@ def compile_model(model1,lambda_smoothness=0.01,lambda_ssim=5,lambda_mse=0.0002,
     i1_rec_ux,i1_rec_uy = grad_xy(i1_rec)
     i2_rec_ux,i2_rec_uy = grad_xy(i2_rec)
     mse_grad = K.mean(K.square(i2_ux-i2_rec_ux)) + K.mean(K.square(i2_uy-i2_rec_uy)) + K.mean(K.square(i1_ux-i1_rec_ux)) + K.mean(K.square(i1_uy-i1_rec_uy))
-    grad_loss = mse + mse_grad
+    grad_loss = mse + mse_grad + mse_image_recon
 
-    total_loss = edge_sm_new*(0.1) + mse_image_recon + grad_loss #+ CL_loss
 
+    #total_loss = sm_loss + occ_loss + occ_punish + re_loss_ssim + flow_loss 
+    # total_loss = grad_loss+0.001*sm_loss + 0.1*mse_grid
+    # total_loss = grad_loss #+ edge_sm*(0.1) + re_loss_ssim
+    # total_loss = grad_loss + edge_sm*(0.1) + mse_image_recon
+    total_loss = grad_loss + mse_image_recon + edge_sm*(0.1)
+    #### model = Model(inputs=[i1,i2], outputs=[o1])
     model1.add_loss(total_loss)
+
     model1.compile(optimizer="adadelta")
 
     return model1
@@ -112,46 +157,29 @@ imgen=ImageSequence_new()
 [X1,X2],Y = imgen.__getitem__()
 
 #-------------------------Training-----------
-# model1.load_weights("../data/old_sm_loss/unflow_001sm_imgrecon_grad_14.h5")
-model1.load_weights("../data/unflow_001sm_new_imgrecon_grad_2.h5")
-model1.fit_generator(imgen,epochs=10001)
-# model1.fit([X1,X2],None,epochs=400)
-# model1.save_weights("../data/unflow_001sm_new_imgrecon_grad_3.h5")
-
+# model1.load_weights('../data/unflow_updated1.h5')
+model1.fit_generator(imgen,epochs=1000)
+# model1.fit([X1,X2],None,epochs=1000)
+model1.save_weights("../data/unflow_updated2.h5")
 
 
 
 
 ###_--------------------test------------------
 
-# """
 # imgen=ImageSequence_new()
-# [X1,X2],Y = imgen.__getitem__()
-# y=model1.predict([X1,X2])
-# u = y[0][0,:,:,0]
-# v = y[0][0,:,:,1]
-# tu = Y[0,:,:,0]
-# tv = Y[0,:,:,1]
-# epe = epe_flow_error(tu, tv, u, v)
-# epe
-# """
+#X1,Y = imgen.__getitem__()
 
+# y=model.predict([X1,X2])
+# y1 = flow_mag(y[0])
+# plt.imsave("testy",y1[0])
+# plt.imsave("testX",X1[0])
 
-"""
-y=model1.predict([X1,X2])
-y1 = flow_mag(y[0])
-plt.imsave("testy",y1[0])
-plt.imsave("testX1",X1[0])
-plt.imsave("testX2",X2[0])
-
-"""
 # np.savez('sample_model1', flow =y1)
 
 ####--------------viz-------------------
 
 """
-imgen=ImageSequence_new()
-[X1,X2],Y = imgen.__getitem__()
 y=model1.predict([X1,X2])
 y1 = flow_mag(y[0])
 %matplotlib
@@ -165,7 +193,7 @@ plt.imshow(X1[0])
 """
 %matplotlib
 plt.imshow(y1[0])
-plt.imsave("l3_new_10",y1[0])
+plt.imsave("temp1",y1[0])
 model.save_weights("data/sampleU12.h5")
 """
 
@@ -189,13 +217,6 @@ plt.imshow(y1)
 ## we can't run flow consistency loss alone because it will try to make the flow at points equal to zero.
 ## This may also result in overall decrease in magnitude of points.
 ## 
-
-##---------------------new_flow_consistency---------------------
-## This one does not work alone as it only wants the flow1 and flow to be invertible of each other
-## It does not want the flow to be able to reconstruct the image2 from inage1
-## On using this alone with smoothness gives very poor value
-
-
 
 ##---------------------grad_loss-----------------
 ## On combining mse and mse_grad, we idntify flow more than mse but magnitude is lower than mse,
@@ -227,15 +248,4 @@ plt.imshow(y1)
 ## this gives better result in terms of boundaries than grad alone,
 ## the magnitude of flow values is lower than what we got from ssim and grad_sm
 
-###-----------------edge_aware_sm_old---------------------
-## This gives nice outline to  the flow values, magnitude is very close to the real values
-## but the problems is that the body part is not is getting smoothened a lot
-## and all the bodies look hollow, 
-## we may train two networks with edge_aware and not edge aware sm and then 
-## take element wise max in both channels so that the max of both body from not edge aware sm
-## and boundaries from the edge aware sm could pass through, in a way it is similar to masking though
-
-###-------------------edge_aware_sm_new---------------------
-## This is less dominant than the previous (edge_aware_sm_old), it needs more weight attached to it
-## performs almost similar to that of (edge_aware_sm_old)
-
+###-----------------------------------------------------------------------------------------

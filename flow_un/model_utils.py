@@ -172,7 +172,15 @@ def flow_mag(y):
     f = np.sqrt(np.square(y[:,:,:,0])+ np.square(y[:,:,:,1]))
     
     return f
+###--------------------------------------------
+def flow_mag_tensor(y):
 
+    # f = np.zeros((10,436,1024))
+    # f[:,:,:] = np.sqrt(np.square(y[:,:,:,0])+ np.square(y[:,:,:,1]))
+    f = tf.sqrt(tf.square(y[:,:,:,0])+ tf.square(y[:,:,:,1]))
+    f = tf.expand_dims(f,-1)
+    
+    return f
 ##############################################
 
 def read_flow(filename):
@@ -197,15 +205,94 @@ def read_flo_file(filename):
         data2d = np.resize(data2d, (h[0], w[0], 2))
     f.close()
     return data2d
-###-----------------------------
 
 
+##########################################################
+###-----------------evaluation----------------------------
+
+###-----------------mpi_epe-------------------------------
+
+UNKNOWN_FLOW_THRESH = 1e7
+
+def epe_flow_error(tu, tv, u, v):
+    """
+    Calculate average end point error
+    :param tu: ground-truth horizontal flow map
+    :param tv: ground-truth vertical flow map
+    :param u:  estimated horizontal flow map
+    :param v:  estimated vertical flow map
+    :return: End point error of the estimated flow
+    """
+    smallflow = 0.0
+    '''
+    stu = tu[bord+1:end-bord,bord+1:end-bord]
+    stv = tv[bord+1:end-bord,bord+1:end-bord]
+    su = u[bord+1:end-bord,bord+1:end-bord]
+    sv = v[bord+1:end-bord,bord+1:end-bord]
+    '''
+    stu = tu[:]
+    stv = tv[:]
+    su = u[:]
+    sv = v[:]
+
+    idxUnknow = (abs(stu) > UNKNOWN_FLOW_THRESH) | (abs(stv) > UNKNOWN_FLOW_THRESH)
+    stu[idxUnknow] = 0
+    stv[idxUnknow] = 0
+    su[idxUnknow] = 0
+    sv[idxUnknow] = 0
+
+    ind2 = [(np.absolute(stu) > smallflow) | (np.absolute(stv) > smallflow)]
+    index_su = su[tuple(ind2)]
+    index_sv = sv[tuple(ind2)]
+    an = 1.0 / np.sqrt(index_su ** 2 + index_sv ** 2 + 1)
+    un = index_su * an
+    vn = index_sv * an
+
+    index_stu = stu[tuple(ind2)]
+    index_stv = stv[tuple(ind2)]
+    tn = 1.0 / np.sqrt(index_stu ** 2 + index_stv ** 2 + 1)
+    tun = index_stu * tn
+    tvn = index_stv * tn
+
+    '''
+    angle = un * tun + vn * tvn + (an * tn)
+    index = [angle == 1.0]
+    angle[index] = 0.999
+    ang = np.arccos(angle)
+    mang = np.mean(ang)
+    mang = mang * 180 / np.pi
+    '''
+
+    epe = np.sqrt((stu - su) ** 2 + (stv - sv) ** 2)
+    epe = epe[tuple(ind2)]
+    mepe = np.mean(epe)
+
+    return mepe
+
+###-----------------------kitti_metric_F1-----------------------
+
+def compute_Fl(flow_gt, flow_est, mask):
+    # F1 measure
+    err = tf.multiply(flow_gt - flow_est, mask)
+    err_norm = tf.norm(err, axis=-1)
+    
+    flow_gt_norm = tf.maximum(tf.norm(flow_gt, axis=-1), 1e-12)
+    F1_logic = tf.logical_and(err_norm > 3, tf.divide(err_norm, flow_gt_norm) > 0.05)
+    F1_logic = tf.cast(tf.logical_and(tf.expand_dims(F1_logic, -1), mask > 0), tf.float32)
+    F1 = tf.reduce_sum(F1_logic) / (tf.reduce_sum(mask) + 1e-6)
+    return F1
 
 
+def return_compute_Fl():
 
+    F_gt=Input(shape=(436,1024,2))
+    fl_est=Input(shape=(436,1024,2))
+    M=Input(shape=(436,1024,2))
+    out1=compute_Fl(F_gt, fl_est, M)
+    com_FL=K.function(inputs=[F_gt,fl_est,M],outputs=[out1])
 
-
-
+    return com_FL
+###########################################
 
 
 
