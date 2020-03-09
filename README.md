@@ -20,23 +20,27 @@ The two image frames, output of the network and the ground truth are displayed b
 </br>
 
 frame_1
-</br>
-<img src="images/testX1.png" align=centre width=500>
+<p align="center">
+  <img src="images/testX1.png" width=500>
+</p>
 </br>
 
 frame_2
-</br>
-<img src="images/testX2.png" align=centre width=500>
+<p align="center">
+  <img src="images/testX2.png" width=500>
+</p>
 </br>
 
 Output
-</br>
-<img src="images/testy.png" align=centre width=500>
+<p align="center">
+  <img src="images/testy.png" width=500>
+</p>
 </br>
 
 ground truth
-</br>
-<img src="images/ground_truth.png" align=centre width=500>
+<p align="center">
+  <img src="images/ground_truth.png" width=500>
+</p>
 </br>
 
 
