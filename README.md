@@ -5,7 +5,6 @@ Optical flow works on several assumptions:
 1. The pixel intensities of an object do not change between consecutive frames.
 2. Neighboring pixels have similar motion.
 </br>
-
 Estimating dense optical flow is one of the longstanding problems in computer vision, with a variety of applications.
 Most of the CNN based approaches rely on the availability of a large amount of ground truth for supervised learning.
 Due to the difficulty of obtaining ground truth in real scenes, such networks are trained on synthetically generated images, for which dense ground truth is easy to obtain in large amounts. 
