@@ -1,9 +1,6 @@
 # Unsupervised Optical Flow Estimation
 
 Optical flow is the pattern of apparent motion of image objects between two consecutive frames caused by the movement of object or camera. It is the 2D vector field where each vector is a displacement vector showing the movement of points from first frame to second.
-Optical flow works on several assumptions:
-1. The pixel intensities of an object do not change between consecutive frames.
-2. Neighboring pixels have similar motion.
 </br>
 Estimating dense optical flow is one of the longstanding problems in computer vision, with a variety of applications.
 Most of the CNN based approaches rely on the availability of a large amount of ground truth for supervised learning.
