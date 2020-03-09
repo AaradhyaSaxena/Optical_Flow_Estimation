@@ -1,6 +1,4 @@
 # Depth Estimation
-.
-
 We present an approach to estimate the pixel-wise depth of the objects using monocular images. 
 We first estimate the point to point correspondance between different frames using Optical Flow.
 Estimating dense optical flow is one of the longstanding problems in computer vision, with a variety of applications.
